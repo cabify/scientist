@@ -197,6 +197,13 @@ module Scientist::Experiment
     name = (name || "control").to_s
     block = behaviors[name]
 
+    current_behaviors =
+      if exclusive_path?
+        { name => block }
+      else
+        behaviors
+      end
+
     if block.nil?
       raise Scientist::BehaviorMissing.new(self, name)
     end
@@ -211,8 +218,8 @@ module Scientist::Experiment
 
     observations = []
 
-    behaviors.keys.shuffle.each do |key|
-      block = behaviors[key]
+    current_behaviors.keys.shuffle.each do |key|
+      block = current_behaviors[key]
       observations << Scientist::Observation.new(key, self, &block)
     end
 
@@ -289,5 +296,9 @@ module Scientist::Experiment
     else
       !!raise_on_mismatches
     end
+  end
+
+  def exclusive_path?
+    false
   end
 end
